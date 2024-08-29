@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main # or your default branch
-  pull_request:
-    branches:
-      - main
 
 jobs:
   build:
@@ -38,9 +35,6 @@ jobs:
     needs: build
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
       - name: Download build artifact
         uses: actions/download-artifact@v3
         with:
@@ -56,9 +50,17 @@ jobs:
           echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H $HOST >> ~/.ssh/known_hosts
-          ssh -o StrictHostKeyChecking=no $USER@$HOST << 'EOF'
+          cat ~/.ssh/known_hosts
+
+      - name: Deploy to EC2
+        env:
+          HOST: ${{ secrets.EC2_HOST }}
+          USER: ${{ secrets.EC2_USER }}
+        run: |
+          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r build/* $USER@$HOST:/path/to/your/app
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $USER@$HOST << 'EOF'
+            ls -al /path/to/your/app
             cd /path/to/your/app
-            rm -rf build/
-            cp -r ~/react-build/* build/
             sudo systemctl restart nginx
+            echo "Deployment Completed!"
           EOF

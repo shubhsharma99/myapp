@@ -47,8 +47,8 @@ jobs:
           USER: ${{ secrets.EC2_USER }}
         run: |
           mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
+          echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/privatekey.pem
+          chmod 600 ~/.ssh/privatekey.pem
           ssh-keyscan -H $HOST >> ~/.ssh/known_hosts
           cat ~/.ssh/known_hosts
 
@@ -57,8 +57,8 @@ jobs:
           HOST: ${{ secrets.EC2_HOST }}
           USER: ${{ secrets.EC2_USER }}
         run: |
-          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r build/* $USER@$HOST:/path/to/your/app
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $USER@$HOST << 'EOF'
+          scp -i ~/.ssh/privatekey.pem -o StrictHostKeyChecking=no -r build/* $USER@$HOST:/path/to/your/app
+          ssh -i ~/.ssh/privatekey.pem -o StrictHostKeyChecking=no $USER@$HOST << 'EOF'
             ls -al /path/to/your/app
             cd /path/to/your/app
             sudo systemctl restart nginx

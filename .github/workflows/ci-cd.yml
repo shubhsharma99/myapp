@@ -56,9 +56,9 @@ jobs:
           HOST: ${{ secrets.EC2_HOST }}
           USER: ${{ secrets.EC2_USER }}
         run: |
-          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r build/* $USER@$HOST:/path/to/your/app
+          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r build/* $USER@$HOST:git@github.com:shubhsharma99/myapp.git
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $USER@$HOST << 'EOF'
-            cd /path/to/your/app
+            git@github.com:shubhsharma99/myapp.git
             sudo systemctl restart nginx
             echo "Deployment Completed!"
           EOF

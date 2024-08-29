@@ -56,9 +56,14 @@ jobs:
           HOST: ${{ secrets.EC2_HOST }}
           USER: ${{ secrets.EC2_USER }}
         run: |
-          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r build/* $USER@$HOST:git@github.com:shubhsharma99/myapp.git
+          # Copy build files to the remote server
+          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r build/* $USER@$HOST:/var/www/myapp/
+
+          # SSH into the server, pull from GitHub, and restart nginx
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $USER@$HOST << 'EOF'
-            git@github.com:shubhsharma99/myapp.git
-            sudo systemctl restart nginx
-            echo "Deployment Completed!"
+          cd /var/www/myapp/
+          git pull origin main
+          sudo systemctl restart nginx
+          echo "Deployment Completed!"
           EOF
+

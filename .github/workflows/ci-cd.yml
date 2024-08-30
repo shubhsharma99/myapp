@@ -1,72 +1,44 @@
-
-name: CI/CD for React Application
+name: CI/CD for React App
 
 on:
   push:
-    branches:
-      - main  # or your default branch
+    branches: [main]
 
 jobs:
-  build:
+  build_and_deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: '18.12.0'
 
       - name: Install dependencies
         run: npm install
 
-      - name: Build application
+      - name: Build project
         run: npm run build
 
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v3
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
         with:
-          name: react-build
-          path: build/
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-
-    steps:
-      - name: Download build artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: react-build
-
-      - name: Set up SSH
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          HOST: ${{ secrets.EC2_HOST }}
-          USER: ${{ secrets.EC2_USER }}
-        run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" | base64 -d > ~/.ssh/privatekey.pem
-          chmod 600 ~/.ssh/privatekey.pem
-          ssh-keyscan -H $HOST >> ~/.ssh/known_hosts
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
       - name: Deploy to EC2
-        env:
-          HOST: ${{ secrets.EC2_HOST }}
-          USER: ${{ secrets.EC2_USER }}
-        run: |
-          # Ensure the build directory exists
-          npm run build
-
-          # Copy build files to the remote server
-          scp -i ~/.ssh/privatekey.pem -o StrictHostKeyChecking=no -r build/* $USER@$HOST:/workspace/myapp/
-
-          # SSH into the server, pull from GitHub, and restart nginx
-          ssh -i ~/.ssh/privatekey.pem -o StrictHostKeyChecking=no $USER@$HOST << 'EOF'
-          cd /workspace/myapp/
-          git pull origin main
-          sudo systemctl restart nginx
-          echo "Deployment Completed!"
-          EOF
+        uses: appleboy/ssh-action@v0.1.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            cd /home/ec2-user/myapp
+            git pull origin main
+            npm install
+            npm run build
+            pm2 restart all # or your command to start the server

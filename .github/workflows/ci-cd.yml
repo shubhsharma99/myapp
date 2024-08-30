@@ -35,6 +35,8 @@ jobs:
           chmod 600 private-key.pem
           ssh -i private-key.pem -o StrictHostKeyChecking=no ec2-user@3.109.3.200
           cd /myapp
+          pwd
+          ls
           git pull origin main
           npm install
           npm run build

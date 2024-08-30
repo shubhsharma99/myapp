@@ -44,9 +44,9 @@ jobs:
           # Copy the build files to EC2
           scp -i private-key.pem -r build ec2-user@3.109.3.200:/home/ec2-user/myapp
           
-          # SSH into the EC2 instance and serve the React app
+          # SSH into the EC2 instance, install serve with sudo, and serve the app on port 3000
           ssh -i private-key.pem -o StrictHostKeyChecking=no ec2-user@3.109.3.200 << 'EOF'
           cd /home/ec2-user/myapp
-          npm install -g serve
-          serve -s build -l 80
+          sudo npm install -g serve
+          serve -s build -l 3000
           EOF

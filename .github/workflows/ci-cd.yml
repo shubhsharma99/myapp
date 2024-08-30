@@ -34,8 +34,13 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > private-key.pem
           chmod 600 private-key.pem
           ssh -i private-key.pem -o StrictHostKeyChecking=no ec2-user@3.109.3.200
-          pwd
-          
+          cd /home/ec2-user/myapp
+          git pull origin main
+          npm install
+          npm run build
+          pm2 restart all
+
+
 
 
      

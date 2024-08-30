@@ -32,12 +32,13 @@ jobs:
       - name: Deploy to EC2
         run : |
           echo ${{ secrets.SSH_PRIVATE_KEY }} > private-key.pem
+          chmod +x private-key.pem
           ssh -i  private-key.pem  ec2-user@3.109.3.200 -yes
-          cd /home/ec2-user/myapp
-          git pull origin main
-          npm install
-          npm run build
-          pm2 restart all
+          # cd /home/ec2-user/myapp
+          # git pull origin main
+          # npm install
+          # npm run build
+          # pm2 restart all
 
      
 

@@ -29,46 +29,17 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-        - name: Deploy to EC2
+      - name: Check Directory and Deploy to EC2
         run: |
-         echo "${{ secrets.SSH_PRIVATE_KEY }}" > private-key.pem
-         chmod 600 private-key.pem
-         ssh -i private-key.pem -o StrictHostKeyChecking=no ec2-user@3.109.3.200 << 'EOF'
-        
-          if [ ! -d "/home/ec2-user/myapp" ]; then
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > private-key.pem
+          chmod 600 private-key.pem
+          ssh -i private-key.pem -o StrictHostKeyChecking=no ec2-user@3.109.3.200 << 'EOF'
+          if [ -d "/home/ec2-user/myapp" ]; then
+          echo "Directory exists"
+          else
           echo "Directory does not exist, creating it now"
           mkdir -p /home/ec2-user/myapp
           fi
           cd /home/ec2-user/myapp
-          echo "Pulling latest code or copying files..."
-          git pull origin main
-          npm install
-          npm start
-          echo "Deployment complete"
+          # Add your deploy commands here
           EOF
-
-
-
-
-     
-
-
-        # uses: appleboy/ssh-action@v0.1.3
-        # with:
-        #   host: ${{ secrets.EC2_HOST }}
-        #   username: ec2-user
-        #   key: ${{ secrets.SSH_PRIVATE_KEY }} 
-        #   port: 22
-        #   script: |
-
-        # - name: Deploy to EC2
-        #run: |
-        #  echo "${{ secrets.SSH_PRIVATE_KEY }}" > private-key.pem
-         # chmod 600 private-key.pem
-         # ssh -i private-key.pem -o StrictHostKeyChecking=no ec2-user@3.109.3.200
-         # cd /home/ec2-user/myapp
-       #  pwd
-       #   git pull origin main
-        #  npm install
-       #   npm run build
-       #   pm2 restart all
